@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optiv File Analysis Prototype</title>
+    <link rel="stylesheet" href="/src/output.css">
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-10 rounded-lg shadow-lg text-center w-full max-w-2xl">
+        <h1 class="text-3xl font-bold text-blue-800">File Cleansing & Analysis Prototype</h1>
+        <p class="mt-2 text-gray-600">Upload a file to automatically cleanse and analyze its content.</p>
+
+        <div class="my-8 flex items-center justify-center">
+            <label
+                class="bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-md cursor-pointer hover:bg-gray-50">
+                <span>Choose File</span>
+                <input type="file" id="fileInput" class="hidden">
+            </label>
+            <span id="fileName" class="ml-4 text-gray-500">No file chosen</span>
+            <button id="analyzeButton"
+                class="bg-blue-800 text-white font-bold py-2 px-6 rounded-md ml-4 hover:bg-blue-900 transition-colors">
+                Analyze File
+            </button>
+        </div>
+
+        <div id="resultsArea" class="hidden">
+            <div id="spinner"
+                class="hidden border-4 border-gray-200 border-t-4 border-t-blue-800 rounded-full w-10 h-10 animate-spin mx-auto my-4">
+            </div>
+            <div id="findings" class="mt-8 text-left border-t border-gray-200 pt-6"></div>
+            
+            <div id="downloadContainer" class="hidden text-center mt-6">
+                <button id="downloadButton" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition-all duration-300 ease-in-out">
+                    Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get all the elements we need from the page
+        const fileInput = document.getElementById('fileInput');
+        const fileNameSpan = document.getElementById('fileName');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const resultsArea = document.getElementById('resultsArea');
+        const findingsDiv = document.getElementById('findings');
+        const spinner = document.getElementById('spinner');
+        const downloadContainer = document.getElementById('downloadContainer'); // New: Get the download container
+        const downloadButton = document.getElementById('downloadButton'); // New: Get the download button
+
+        let currentFindings = []; // New: A variable to store the findings for download
+
+        // This part listens for when you choose a file and updates the text.
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameSpan.textContent = fileInput.files[0].name;
+            } else {
+                fileNameSpan.textContent = 'No file chosen';
+            }
+        });
+
+        // This is your logic for the "Analyze" button.
+        analyzeButton.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please select a file first!");
+                return;
+            }
+            
+            resultsArea.classList.remove('hidden');
+            spinner.classList.remove('hidden');
+            downloadContainer.classList.add('hidden'); // New: Hide download button during analysis
+            findingsDiv.innerHTML = '';
+
+            setTimeout(() => {
+                const dummyData = {
+                    key_findings: [
+                        "**System Identified:** Firewall Ruleset Snippet",
+                        "**Analysis:** The rule permits inbound traffic on port 443 (HTTPS), which is standard for secure web traffic.",
+                        "**Observation:** No rules for port 80 (unencrypted HTTP) were found, which is a good security practice.",
+                        "**Potential Risk:** The source is listed as 'Any'. This could be a potential risk if not intended. It's better to restrict access to specific IP ranges."
+                    ]
+                };
+                
+                currentFindings = dummyData.key_findings; // New: Save the findings for download
+
+                spinner.classList.add('hidden');
+
+                let findingsHTML = '<h2 class="text-2xl font-semibold mb-4 text-slate-900">Analysis Results</h2><ul class="space-y-2">';
+                dummyData.key_findings.forEach(finding => {
+                    findingsHTML += `<div class="bg-slate-100 p-3 rounded-lg text-slate-700">${finding}</div>`;
+                });
+                findingsHTML += '</ul>';
+                findingsDiv.innerHTML = findingsHTML;
+
+                downloadContainer.classList.remove('hidden'); // New: Show the download button
+            }, 1500);
+        });
+
+        // --- New: All of the code below was added for the download feature ---
+
+        // This function generates the HTML content for the report file
+        function generateReportHTML(findings, fileName) {
+            const date = new Date().toLocaleDateString();
+            const findingsHTML = findings.map(finding => `<li>${finding.replace(/\*\*/g, '')}</li>`).join(''); // Removes bolding for the report
+
+            return `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Analysis Report</title>
+                    <style>
+                        body { font-family: sans-serif; margin: 2rem; }
+                        h1 { color: #1e293b; }
+                        h2 { color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+                        ul { list-style: none; padding: 0; }
+                        li { background-color: #f1f5f9; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; }
+                    </style>
+                </head>
+                <body>
+                    <h1>File Analysis Report</h1>
+                    <p><strong>Analyzed File:</strong> ${fileName}</p>
+                    <p><strong>Date:</strong> ${date}</p>
+                    <h2>Key Findings</h2>
+                    <ul>
+                        ${findingsHTML}
+                    </ul>
+                </body>
+                </html>
+            `;
+        }
+
+        // This function runs when the download button is clicked
+        downloadButton.addEventListener('click', () => {
+            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : "Unknown File";
+            const fileContent = generateReportHTML(currentFindings, fileName);
+            const blob = new Blob([fileContent], { type: 'text/html' });
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'analysis-report.html'; 
+            a.click();
+            URL.revokeObjectURL(a.href);
+        });
+    </script>
+</body>
+</html>
