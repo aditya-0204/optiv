@@ -1,0 +1,46 @@
+{
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 6,
+    "success_rate": 100.0,
+    "timestamp": "2025-10-05T06:35:25.521616"
+  },
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Status: 200, Response: {'message': 'Security File Analyzer API', 'status': 'active'}",
+      "timestamp": "2025-10-05T06:35:05.118256"
+    },
+    {
+      "test_name": "Single File Upload & Analysis",
+      "success": true,
+      "details": "Status: 200, PII detected: 18, File type: txt - PII detection working correctly",
+      "timestamp": "2025-10-05T06:35:10.600048"
+    },
+    {
+      "test_name": "Batch File Upload & Analysis",
+      "success": true,
+      "details": "Status: 200, Files processed: 2, Batch ID: 1fcae845-39da-4940-9d67-1a9352c88787",
+      "timestamp": "2025-10-05T06:35:20.519940"
+    },
+    {
+      "test_name": "Analysis History Retrieval",
+      "success": true,
+      "details": "Status: 200, Single files: 4, Batches: 2",
+      "timestamp": "2025-10-05T06:35:20.577331"
+    },
+    {
+      "test_name": "Excel Export",
+      "success": true,
+      "details": "Status: 200, Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, Size: 6281 bytes, Is Excel: True",
+      "timestamp": "2025-10-05T06:35:20.622094"
+    },
+    {
+      "test_name": "PII Detection Accuracy",
+      "success": true,
+      "details": "PII detected: 18, Types found: ['name', 'ssn', 'email', 'phone', 'credit_card', 'address', 'zip_code'], All types: ['ssn', 'ssn', 'phone', 'email', 'credit_card', 'credit_card', 'address', 'address', 'zip_code', 'passport', 'bank_account', 'name', 'name', 'name', 'name', 'name', 'name', 'name']",
+      "timestamp": "2025-10-05T06:35:25.520406"
+    }
+  ]
+}
